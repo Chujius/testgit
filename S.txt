@@ -1,0 +1,162 @@
+public class AboutFragment extends BaseFragment{
+    private final String TAG = AboutFragment.class.getSimpleName();
+    private String[] data;
+
+    private AboutAdapter adapter;
+    private ListView mListView;
+    private View mView;
+
+
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mView = inflater.inflate(R.layout.fragment_about, null);
+        Toolbar myToolbar = initToolbar(mView, R.id.my_toolbar, R.id.toolbar_title, R.string.user_home);
+        initView();
+        bindData();
+        initListener();
+        return mView;
+    }
+
+    @Override
+    public void initView() {
+        data = getActivity().getResources().getStringArray(R.array.array_about_type);
+        mListView = (ListView) mView.findViewById(R.id.list_item);
+        View user_view = LayoutInflater.from(getActivity()).inflate(R.layout.user_view, mListView, false);
+        ImageView user_icon = (ImageView) user_view.findViewById(R.id.user_icon);
+        TextView user_name = (TextView) user_view.findViewById(R.id.user_name);
+
+
+        mListView.addHeaderView(user_view);
+
+    }
+
+    @Override
+    public void initValidata() {
+
+    }
+
+    @Override
+    public void initListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = null;
+                Uri uri;
+//                1.项目主页
+//                2.问题反馈
+//                3.设置
+//                4.关于App
+
+                switch (position) {
+                    case 0:
+                        // 用户界面
+                        showDialog();
+                        break;
+                    case 1:
+                        // 进入更多新闻
+//                String url = "https://news.163.com/";
+//                WebViewActivity.loadUrl(getActivity(), url, "加载中...");
+                        uri = Uri.parse(getActivity().getResources().getString(R.string.project_url));
+                        intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
+                        break;
+                    case 2:
+                        // 进入问题反馈
+                        intent = new Intent(getActivity(), FeedbackActivity.class);
+                        startActivity(intent);
+                        break;
+                    case 3:
+                        // 设置
+                        intent = new Intent(getActivity(), SettingActivity.class);
+                        startActivity(intent);
+                        break;
+                    case 4:
+                        // 进入关于App
+                        intent = new Intent(getActivity(), AboutActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void bindData() {
+        adapter = new AboutAdapter();
+        mListView.setAdapter(adapter);
+    }
+
+    private class AboutAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            return data.length;
+        }
+
+        @Override
+        public String getItem(int position) {
+            return data[position];
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_about, null);
+            TextView tv_about = (TextView) convertView.findViewById(R.id.tv_about);
+            tv_about.setText(data[position]);
+            return convertView;
+        }
+
+
+    }
+
+    private void showDialog() {
+        final CustomDialog dialog = new CustomDialog(getActivity(), R.style.Theme_AppCompat_Dialog);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        dialog.setOnClickListener(new CustomDialog.OnCustomDialogClickListener() {
+            @Override
+            public void onPositiveClick(String username, String password) {
+
+
+
+                // 处理登录操作
+                boolean result = login(username, password);
+                String message = result ? "登录成功" : "登录失败";
+                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+
+                // 关闭对话框
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onNegativeClick() {
+                // 关闭对话框
+                dialog.dismiss();
+            }
+        });
+    }
+
+    private boolean login(String username, String password) {
+        // 查找账号密码是否存在
+        String[] accounts = getResources().getStringArray(R.array.accounts);
+        for (String account : accounts) {
+            String[] user = account.split(":");
+            if (user[0].equals(username) && user[1].equals(password)) {
+                View view = LayoutInflater.from(getActivity()).inflate(R.layout.user_view, mListView, false);
+                TextView user_name = (TextView) view.findViewById(R.id.user_name);
+                user_name.setText("已登录");
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
